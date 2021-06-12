@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import axios from 'axios'
-import FacebookLogin from 'react-facebook-login';
-import { GoogleLogin } from 'react-google-login';
+// import FacebookLogin from 'react-facebook-login';
+// import { GoogleLogin } from 'react-google-login';
 import TwitterLogin from "react-twitter-login";
 import { LinkedIn } from 'react-linkedin-login-oauth2';
 import linkedin from 'react-linkedin-login-oauth2/assets/linkedin.png'
-
+import GoogleLogin from 'react-google-login';
+import FacebookLogin from 'react-facebook-login/dist/facebook-login-render-props'
 function Home(){
 
     const [ code, errorMessage ] = useState()
@@ -70,40 +71,43 @@ function Home(){
         <div>
           
             <FacebookLogin
-            buttonText="Login"
-    appId="469620310816209"
-    fields="name,picture"
-    callback={responseFacebook} />
+							appId="482811786156180"
+							fields="name,picture"
+							callback={responseFacebook}
+							// buttonText="Login"
+							render={renderProps => (
+						<button className="social" onClick={renderProps.onClick}>facebook costume</button>
+							)}
+							/>																
 
-<GoogleLogin
-    clientId="684458592769-vm96nmdi7l5v46fsn08d6bgdnn5b8rmf.apps.googleusercontent.com"
-    buttonText="Login"
-    onSuccess={responseGoogle}
-    onFailure={responseGoogle}
-    // cookiePolicy={'single_host_origin'}
-  />
-  <TwitterLogin
-      authCallback='{authHandler}'
-      consumerKey='{CONSUMER_KEY}'
-      consumerSecret='{CONSUMER_SECRET}'
-    />
-<div>
-<LinkedIn
-          clientId="86bf5uhj67ssy0"
-          redirectUri={`${window.location.origin}/linkedin`}
-          scope="r_liteprofile"
-          state="foobar"
-          onFailure={handleFailure}
-          onSuccess={handleSuccess}
-          supportIE
-          redirectPath='/linkedin'
-        >
-          <img src={linkedin} alt="Log in with Linked In" style={{ maxWidth: '180px' }} />
-        </LinkedIn>
-        {!code && <div>No code</div>}
-        {code && <div>Code: {code}</div>}
-        {errorMessage && <div>{errorMessage}</div>}
-      </div>
+            <GoogleLogin
+							clientId="684458592769-vm96nmdi7l5v46fsn08d6bgdnn5b8rmf.apps.googleusercontent.com"
+							render={renderProps => (
+						<button className="social" onClick={renderProps.onClick}> google</button>
+							)}
+							buttonText="Login"
+							onSuccess={responseGoogle}
+							onFailure={responseGoogle}
+							cookiePolicy={'single_host_origin'}
+			        />
+            <div>
+            <LinkedIn
+                    clientId="86bf5uhj67ssy0"
+                    redirectUri={`${window.location.origin}/linkedin`}
+                    scope="r_liteprofile"
+                    state="foobar"
+                    onFailure={handleFailure}
+                    onSuccess={handleSuccess}
+                    supportIE
+                    redirectPath='/linkedin'
+                    >
+                        <button>linkedin</button>
+                    {/* <img src={linkedin} alt="Log in with Linked In" style={{ maxWidth: '180px' }} /> */}
+                    </LinkedIn>
+                    {!code && <div>No code</div>}
+                    {code && <div>Code: {code}</div>}
+                    {errorMessage && <div>{errorMessage}</div>}
+                </div>
         </div>
     )
 }
