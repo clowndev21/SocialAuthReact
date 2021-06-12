@@ -31,8 +31,8 @@ class LinkedInPage extends Component {
         <LinkedIn
           clientId="86bf5uhj67ssy0"
           redirectUri={`${window.location.origin}/linkedin`}
-          scope="r_emailaddress"
-          state="34232423"
+          scope="r_liteprofile"
+          state="foobar"
           onFailure={this.handleFailure}
           onSuccess={this.handleSuccess}
           supportIE
