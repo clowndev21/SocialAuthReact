@@ -1,25 +1,51 @@
-import React, { useState } from 'react';
+import React from 'react';
 import axios from 'axios'
+import { useCookies } from 'react-cookie';
 // import FacebookLogin from 'react-facebook-login';
 // import { GoogleLogin } from 'react-google-login';
-import TwitterLogin from "react-twitter-login";
+// import TwitterLogin from "react-twitter-login";
 import { LinkedIn } from 'react-linkedin-login-oauth2';
-import linkedin from 'react-linkedin-login-oauth2/assets/linkedin.png'
+// import linkedin from 'react-linkedin-login-oauth2/assets/linkedin.png'
 import GoogleLogin from 'react-google-login';
 import FacebookLogin from 'react-facebook-login/dist/facebook-login-render-props'
 function Home(){
+    const [cookies] = useCookies(['user','state']);
+    console.log(cookies.user,'user')
+    console.log(cookies.state,'statte')
+    return(
+        <div>
+            {
+                cookies.state==='1'?
+                <div>
+                    <Companyform/>
+               
+                </div>
+                :
+                cookies.state==='2'?
+                <Mainpage/>
+                :
+                <Account/>
+            }
+            
+            
+        </div>
+    )
+    
+}
 
-    const [ code, errorMessage ] = useState()
+export default Home
 
+const Account=()=>{
+    
+    const [cookies,setCookie] = useCookies(['user','state']);
     const check=()=>{
-        var bodyFormData=new FormData()
+    var bodyFormData=new FormData()
     bodyFormData.append('username','admin')
     bodyFormData.append('password','password');
     bodyFormData.append('client_id','9l6eJ9iiCVedDF8tsvP8SvrfOqBbPn9wA4xu93iv')
     bodyFormData.append('client_secret','NjNuiMH2p15cuVygvl4LV9RxtmJi28J02ZBUyiSAQYQfEL4xj5SdNEs1UvLv09zCaAzWuYVNe7oQIn5TYIvoocDyO792HPLkOhiv1DrDHZnJg3HenXkXggaNZ5EqKxUP');
     bodyFormData.append('grant_type','password');
 
-    console.log('ohhh')
     axios.post('http://127.0.0.1:8000/auth/token',bodyFormData,{
             headers: {
               'content-type': 'multipart/form-data'
@@ -28,44 +54,69 @@ function Home(){
     }
 
     const responseFacebook=(res)=>{
-        console.log(res)
+        if(res.accessToken){
+		
+		var bodyFormData=new FormData();
+	  bodyFormData.append('token',res.accessToken)
+	  bodyFormData.append('backend','facebook')
+	  bodyFormData.append('grant_type','convert_token')
+	  bodyFormData.append('client_id','9l6eJ9iiCVedDF8tsvP8SvrfOqBbPn9wA4xu93iv')
+	  bodyFormData.append('client_secret','NjNuiMH2p15cuVygvl4LV9RxtmJi28J02ZBUyiSAQYQfEL4xj5SdNEs1UvLv09zCaAzWuYVNe7oQIn5TYIvoocDyO792HPLkOhiv1DrDHZnJg3HenXkXggaNZ5EqKxUP')
+	  axios.post('http://127.0.0.1:8000/auth/convert-token',bodyFormData).then((response)=> {
+		User(response.data.access_token,'Facebook')
+	  })
+	 
+	}
     }
     const responseGoogle=(res)=>{
-        console.log(res)
-    }
+		if(res.accessToken){
+		var bodyFormData=new FormData();
+	  bodyFormData.append('token',res.accessToken)
+	  bodyFormData.append('backend','google-oauth2')
+	  bodyFormData.append('grant_type','convert_token')
+	  bodyFormData.append('client_id','9l6eJ9iiCVedDF8tsvP8SvrfOqBbPn9wA4xu93iv')
+	  bodyFormData.append('client_secret','NjNuiMH2p15cuVygvl4LV9RxtmJi28J02ZBUyiSAQYQfEL4xj5SdNEs1UvLv09zCaAzWuYVNe7oQIn5TYIvoocDyO792HPLkOhiv1DrDHZnJg3HenXkXggaNZ5EqKxUP')
+	  axios.post('http://127.0.0.1:8000/auth/convert-token',bodyFormData).then((response)=> {
+		User(response.data.access_token,'Google')
+	  })
+	 
+	}
+	}
 
 
-   const handleSuccess = (data) => {
-        console.log("data", data)
-        errorMessage(data.code)
-        var bodyFormData=new FormData()
-    bodyFormData.append('grant_type','authorization_code')
+   const responseLinkedIn = (data) => {
+    var bodyFormData=new FormData()
     bodyFormData.append('code',data.code);
     bodyFormData.append('client_id','86bf5uhj67ssy0')
-    bodyFormData.append('client_secret','1Du0YxPl4wz2osAJ');
-    bodyFormData.append('redirect_uri','http://localhost:3000/linkedin');
-
-    console.log('ohhh')
-    axios.get('https://www.linkedin.com/oauth/v2/accessToken',bodyFormData,
-    // {
-    //         headers: {
-    //           'content-type': 'x-www-form-urlencoded',
-    //         //   "Access-Control-Allow-Origin": "http://localhost:3000"
-    //         }}
-            )
-        .then((data)=>console.log(data.data))
-
-
-
-
-
+    axios.post('http://127.0.0.1:8000/account/ldaccessToken',bodyFormData)
+        .then((data)=>{
+            console.log(data.data)
+            User(data.data,LinkedIn)
+        })
       }
-    
-    const handleFailure = (error) => {
-        console.log(error)
-        errorMessage(error.errorMessage)
+
+
+
+    const User=(access_token,provider)=>{
+    var bodyFormData=new FormData();
+    bodyFormData.append('access_token',access_token)
+    axios.post('http://127.0.0.1:8000/account/get-user',bodyFormData).then((response)=> {
+        console.log(response.data,'userdata')
+        var data=response.data
+        var userdata={'access_token':access_token,'email':data.email,'first_name':data.first_name,'last_name':data.last_name,'username':data.username,'provider':provider,'status':data.status,'companyname':data.companyname}
+        setCookie('user',userdata);
+        if(data.status)
+        {
+            setCookie('state',2)
+        }
+        else{
+            setCookie('state',1)
+        }
         
-      }
+        // var userdata={'access_token':access_token,'email':response.data[0].email,'first_name':response.data[0].first_name,'last_name':response.data[0].last_name,'username':response.data[0].username,'provider':provider}
+        // window.location.reload();
+    })
+    }
 
     return(
         <div>
@@ -90,26 +141,85 @@ function Home(){
 							onFailure={responseGoogle}
 							cookiePolicy={'single_host_origin'}
 			        />
-            <div>
+            
             <LinkedIn
                     clientId="86bf5uhj67ssy0"
                     redirectUri={`${window.location.origin}/linkedin`}
                     scope="r_liteprofile"
                     state="foobar"
-                    onFailure={handleFailure}
-                    onSuccess={handleSuccess}
+                    onFailure={responseLinkedIn}
+                    onSuccess={responseLinkedIn}
                     supportIE
                     redirectPath='/linkedin'
                     >
                         <button>linkedin</button>
-                    {/* <img src={linkedin} alt="Log in with Linked In" style={{ maxWidth: '180px' }} /> */}
-                    </LinkedIn>
-                    {!code && <div>No code</div>}
-                    {code && <div>Code: {code}</div>}
-                    {errorMessage && <div>{errorMessage}</div>}
-                </div>
+              
+            </LinkedIn>
+                    
+                
         </div>
     )
 }
 
-export default Home
+
+
+const Companyform=()=>{
+    const [cookies,setCookie] = useCookies(['user','state']);
+    const company=(event)=>{
+        event.preventDefault();
+	  var companyname = document.getElementById("companyname").value
+	  console.log(companyname)
+	  var bodyFormData=new FormData();
+	  bodyFormData.append('access_token',cookies.user.access_token)
+      bodyFormData.append('companyname',companyname)
+	  axios.post('http://127.0.0.1:8000/account/setcompany',bodyFormData).then((response)=> {
+		var data=response.data
+        var userdata={'access_token':data.access_token,'email':data.email,'first_name':data.first_name,'last_name':data.last_name,'username':data.username,'status':data.status,'companyname':data.companyname}
+        setCookie('user',userdata);
+        setCookie('state',2)
+	  })
+	  .catch((error)=> {
+		console.log(error.response.data.error_description);
+	  });
+    }
+    return(
+        <div>
+            <form onSubmit={company}>
+                <input type="text" id='companyname' placeholder="Company Name" required/>
+                {/* <input type="password" id='spassword' placeholder="Password" required/> */}
+                <button>submit</button>
+                <button className="btn btn-success" onClick={()=>{setCookie('user','');setCookie('state',0)}}>logout</button>
+            </form>
+        </div>
+    )
+}
+
+
+
+const Mainpage=()=>{
+    const [cookies,setCookie] = useCookies(['user','state']);
+    return(
+        
+        <div style={{padding: '50px'}}>
+        <center>
+        <button className="btn btn-success" onClick={()=>{setCookie('user','');setCookie('state',0)}}>Signout</button>
+        
+        <div style={{marginTop: '20px'}}>hello! {cookies.user.first_name}</div>
+        <div style={{marginTop: '20px'}}>Email:- {cookies.user.email}</div>
+        <div style={{marginTop: '20px'}}>Username:- {cookies.user.username}</div>
+        {
+            cookies.user.last_name?
+            <div style={{marginTop: '20px'}}>Last_name:- {cookies.user.last_name}</div>
+            :
+            <></>
+
+        }
+        <div style={{marginTop: '20px'}}>Provider:- {cookies.user.provider}</div>
+
+        </center>
+
+        
+        
+    </div>
+    )
+}
