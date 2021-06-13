@@ -17,7 +17,7 @@ export default function BasicExample() {
             <Home />
           </Route>
         <Route exact path="/linkedin" component={LinkedInPopUp} />
-        {/* <Route path="/" component={LinkedInPage} /> */}
+        
       </Switch>
     </Router>
   );
