@@ -35,6 +35,7 @@ export default Home
 const Account=()=>{
     const [account,setAccount]=useState(false)
     const [companydetails,setCompanydetails]=useState()
+    const [mobile,setMobile]=useState('')
     const [cookies,setCookie] = useCookies(['user']);
     console.log(companydetails)
     const company=()=>{
@@ -167,6 +168,59 @@ const Account=()=>{
                                 
                             
                     </div>
+                    {
+                        mobile?
+                        <form onSubmit={(event)=>
+                            { event.preventDefault();
+                                var otp=event.target.otp.value
+                                var bodyFormData=new FormData();
+                                bodyFormData.append('mobile',mobile)
+                                bodyFormData.append('otp',otp)
+                                axios.post('http://127.0.0.1:8000/account/checkotp',bodyFormData).then((response)=> {
+                                    console.log(response)
+                                    if(response.data.error==='no'){
+                                        setMobile('')
+                                        var data=response.data
+                                        var userdata={'access_token':data.access_token,'email':data.email,'first_name':data.first_name,'last_name':data.last_name,'username':data.username,'provider':'otp','status':data.status,'companyname':data.companyname}
+                                        setCookie('user',userdata);
+                                        setCookie('signinstatus',true);
+                                    }
+                                    else{
+                                        alert(response.data.error)
+                                    }
+                                })
+                                }
+                                }>
+                            <label>Otp</label>
+                            <input type='number' id='otp' placeholder='enter otp'/>
+                            <button type='submit'>submit</button>
+                        </form>
+                    :
+                        <form onSubmit={(event)=>
+                            { event.preventDefault();
+                                var mobile=event.target.number.value
+                                var name=event.target.name.value
+                                var bodyFormData=new FormData();
+                                bodyFormData.append('mobile',mobile)
+                                bodyFormData.append('name',name)
+                                bodyFormData.append('companyname',companydetails.companyname)
+                                axios.post('http://127.0.0.1:8000/account/createuser',bodyFormData).then((response)=> {
+                                    if(response.data.status){
+                                        setMobile(mobile)
+                                        setCompanydetails({})
+                                    }
+                                    else{
+                                        alert(response.data.error)
+                                    }
+                                })
+                                }
+                                }>
+                        <label>Mobile Number</label>
+                        <input type='number' id='number' placeholder='enter your number' required/>
+                        <input type='name' id='name' placeholder='enter your name' required/>
+                        <button type='submit'>submit</button>
+                        </form>
+                    }
                 </div>
                 :
                 <div>
@@ -223,6 +277,55 @@ const Account=()=>{
                             
                         
                 </div>
+                {
+                    mobile?
+                    <form onSubmit={(event)=>
+                        { event.preventDefault();
+                            var otp=event.target.otp.value
+                            var bodyFormData=new FormData();
+                            bodyFormData.append('mobile',mobile)
+                            bodyFormData.append('otp',otp)
+                            axios.post('http://127.0.0.1:8000/account/checkotp',bodyFormData).then((response)=> {
+                                console.log(response)
+                                if(response.data.error==='no'){
+                                    setMobile('')
+                                    var data=response.data
+                                    var userdata={'access_token':data.access_token,'email':data.email,'first_name':data.first_name,'last_name':data.last_name,'username':data.username,'provider':'otp','status':data.status,'companyname':data.companyname}
+                                    setCookie('user',userdata);
+                                    setCookie('signinstatus',true);
+                                }
+                                else{
+                                    alert(response.data.error)
+                                }
+                            })
+                            }
+                            }>
+                        <label>Otp</label>
+                        <input type='number' id='otp' placeholder='enter otp'/>
+                        <button type='submit'>submit</button>
+                    </form>
+                    :
+                    <form onSubmit={(event)=>
+                       { event.preventDefault();
+                        var mobile=event.target.number.value
+                        var bodyFormData=new FormData();
+                        bodyFormData.append('mobile',mobile)
+                        axios.post('http://127.0.0.1:8000/account/otprequest',bodyFormData).then((response)=> {
+                            if(response.data){
+                                setMobile(mobile)
+                            }
+                            else{
+                                alert("your number does't exist")
+                            }
+                        })
+                        }
+                        }>
+                    <label>Mobile Number</label>
+                    <input type='number' id='number' placeholder='enter your number' required/>
+                    <button type='submit'>submit</button>
+                    </form>
+                }
+                
             <button onClick={()=>setAccount(true)}>signup</button>
             </div>
         }
@@ -401,8 +504,13 @@ const Mainpage=()=>{
         <div style={{padding: '50px'}}>
         <center>
         <button className="btn btn-success" onClick={()=>setCookie('user','')}>Signout</button>
+        {
+            cookies.user.first_name?
+            <div style={{marginTop: '20px'}}>hello! {cookies.user.first_name}</div>
+            :
+            <div style={{marginTop: '20px'}}>hello! {cookies.user.username}</div>
+        }
         
-        <div style={{marginTop: '20px'}}>hello! {cookies.user.first_name}</div>
         <div style={{marginTop: '20px'}}>Email:- {cookies.user.email}</div>
         <div style={{marginTop: '20px'}}>Username:- {cookies.user.username}</div>
         {
