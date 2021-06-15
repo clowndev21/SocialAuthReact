@@ -40,7 +40,9 @@ const Account=()=>{
     console.log(companydetails)
     const company=()=>{
         var companyname = document.getElementById("companyname").value
-        var data={'companyname':companyname}
+        var name = document.getElementById("name").value
+        var email = document.getElementById("email").value
+        var data={'companyname':companyname,'name':name,'email':email}
         setCompanydetails(data)
     }
 
@@ -94,12 +96,20 @@ const Account=()=>{
         if(companydetails){
             bodyFormData.append('access_token',access_token)
             bodyFormData.append('companyname',companydetails.companyname)
+            bodyFormData.append('name',companydetails.name)
+            bodyFormData.append('email',companydetails.email)
             axios.post('http://127.0.0.1:8000/account/setcompany',bodyFormData).then((response)=> {
                 console.log(response.data,'userdata')
                 var data=response.data
-                var userdata={'access_token':access_token,'email':data.email,'first_name':data.first_name,'last_name':data.last_name,'username':data.username,'provider':provider,'status':data.status,'companyname':data.companyname}
-                setCookie('user',userdata);
-                setCookie('signinstatus',true);
+                if(data.status){
+                    var userdata={'access_token':access_token,'email':data.email,'first_name':data.first_name,'last_name':data.last_name,'username':data.username,'provider':provider,'status':data.status,'companyname':data.companyname}
+                    setCookie('user',userdata);
+                    setCookie('signinstatus',true);
+                }
+                else{
+                    alert(data.error)
+                }
+                
             
             })
         }else{
@@ -199,11 +209,12 @@ const Account=()=>{
                         <form onSubmit={(event)=>
                             { event.preventDefault();
                                 var mobile=event.target.number.value
-                                var name=event.target.name.value
+                                
                                 var bodyFormData=new FormData();
                                 bodyFormData.append('mobile',mobile)
-                                bodyFormData.append('name',name)
                                 bodyFormData.append('companyname',companydetails.companyname)
+                                bodyFormData.append('name',companydetails.name)
+                                bodyFormData.append('email',companydetails.email)
                                 axios.post('http://127.0.0.1:8000/account/createuser',bodyFormData).then((response)=> {
                                     if(response.data.status){
                                         setMobile(mobile)
@@ -217,7 +228,7 @@ const Account=()=>{
                                 }>
                         <label>Mobile Number</label>
                         <input type='number' id='number' placeholder='enter your number' required/>
-                        <input type='name' id='name' placeholder='enter your name' required/>
+                        
                         <button type='submit'>submit</button>
                         </form>
                     }
@@ -226,6 +237,8 @@ const Account=()=>{
                 <div>
                     <form onSubmit={company}>
                         <input type="text" id='companyname' placeholder="Company Name" required/>
+                        <input type="text" id='name' placeholder="Name" required/>
+                        <input type="email" id='email' placeholder="Email" required/>
                         <button >submit</button>
                     </form>
                     
